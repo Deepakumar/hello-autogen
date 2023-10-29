@@ -5,7 +5,7 @@ config_list = [
         "api_type": "open_ai",
         "api_base": "http://localhost:1234/v1",
         "api_key": "NULL"
-    }
+    },
 ]
 
 llm_config = {
@@ -23,7 +23,7 @@ assistant = autogen.AssistantAgent(
 
 user_proxy = autogen.UserProxyAgent(
  name="user_proxy",
- human_input_mode="NEVER",
+ human_input_mode="TERMINATE",
  max_consecutive_auto_reply=10,
  is_termination_msg=lambda x: x.get("content", "").rstrip().endswith("TERMINATE"),
  code_execution_config={"work_dir": "web"},
@@ -32,6 +32,6 @@ user_proxy = autogen.UserProxyAgent(
  or the reason why the task is not solved yet."""
 )
 
-task = """Write a python method to print numbers 50 to 100"""
+task = """Write an article about employees of the company using the references from https://cybernatics.io/about-us-cybersecurity-solutions/"""
 
 user_proxy.initiate_chat(assistant, message=task)
