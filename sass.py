@@ -2,11 +2,14 @@
 from autogen import AssistantAgent, GroupChatManager, UserProxyAgent, config_list_from_json
 from autogen.agentchat import GroupChat
 
+import autogen
+import panel as pn
+
 config_list = [
     {
         "api_base": "http://localhost:1234/v1",
         "api_type": "open_ai",
-        "api_key": "NULL",
+        "api_key": "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",
     }
 ]
 
@@ -73,9 +76,56 @@ groupchat = GroupChat(
 )
 manager = GroupChatManager(groupchat=groupchat, llm_config=llm_config)
 
-admin.initiate_chat(
-    manager,
-    message=""" 
-develop a SaaS solution designed to streamline and enhance supply chain management for businesses.
-""",
+def print_messages(recipient, messages, sender, config):
+
+    chat_interface.send(messages[-1]['content'], user=messages[-1]['name'], respond=False)
+    print(f"Messages from: {sender.name} sent to: {recipient.name} | num messages: {len(messages)} | message: {messages[-1]}")
+    return False, None  # required to ensure the agent communication flow continues
+
+admin.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
 )
+
+Marketing.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+Sales.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+Planner.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+Product.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+critic.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+pn.extension(design="material")
+def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
+    admin.initiate_chat(
+    manager,
+    message=contents
+)
+
+chat_interface = pn.chat.ChatInterface(callback=callback)
+chat_interface.send("Send a message!", user="System", respond=False)
+chat_interface.servable()
+
