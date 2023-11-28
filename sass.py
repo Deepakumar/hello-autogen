@@ -4,12 +4,13 @@ from autogen.agentchat import GroupChat
 
 import autogen
 import panel as pn
+import json
 
 config_list = [
     {
         "api_base": "http://localhost:1234/v1",
         "api_type": "open_ai",
-        "api_key": "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",
+        "api_key": "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",
     }
 ]
 
@@ -23,7 +24,7 @@ llm_config = {"config_list": config_list, "seed": 42, "request_timeout": 600,
 
 admin = UserProxyAgent(
     name="admin",
-    human_input_mode="NEVER",
+    human_input_mode="ALWAYS",
     system_message="""Reply TERMINATE if the task has been solved at full satisfaction.
                       Otherwise, reply CONTINUE, or the reason why the task is not solved yet.""",
     llm_config=llm_config,
@@ -70,23 +71,53 @@ critic = AssistantAgent(
     llm_config=llm_config,
 )
 groupchat = GroupChat(
-    agents=[admin, Sales,Marketing,Product,Planner,critic],
+    agents=[Sales,Marketing,Product,Planner,critic],
     messages=[],
     max_round=500,
 )
 manager = GroupChatManager(groupchat=groupchat, llm_config=llm_config)
+avatar = {admin.name:"👨‍💼", Marketing.name:"👩‍💻", Sales.name:"👩‍🔬", Planner.name:"🗓", Product.name:"🛠", critic.name:'📝'}
 
 def print_messages(recipient, messages, sender, config):
-
-    chat_interface.send(messages[-1]['content'], user=messages[-1]['name'], respond=False)
-    print(f"Messages from: {sender.name} sent to: {recipient.name} | num messages: {len(messages)} | message: {messages[-1]}")
-    return False, None  # required to ensure the agent communication flow continues
+    try:
+        _avatar = avatar.get(messages[-1].get('name', 'admin'))
+        _user = messages[-1].get('name', 'Assistant')
+        _message = messages[-1].get('content','')
+        if _user != 'admin':
+            chat_interface.send(_message, _user, avatar=_avatar, respond=False)
+        return False, None
+    except Exception as e:
+        print("An error occurred:", e)
 
 admin.register_reply(
     [autogen.Agent, None],
     reply_func=print_messages, 
     config={"callback": None},
 )
+
+Marketing.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+Sales.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+Planner.register_reply(
+    [autogen.Agent, None],
+    reply_func=print_messages, 
+    config={"callback": None},
+)
+
+# admin.register_reply(
+#     [autogen.Agent, None],
+#     reply_func=print_messages, 
+#     config={"callback": None},
+# )
 
 Marketing.register_reply(
     [autogen.Agent, None],
@@ -119,13 +150,24 @@ critic.register_reply(
 )
 
 pn.extension(design="material")
+
+def custom_renderer(value):
+    return f'<span style="background-color: yellow;">{value}</span>'
+
 def callback(contents: str, user: str, instance: pn.chat.ChatInterface):
     admin.initiate_chat(
     manager,
     message=contents
 )
+    
 
-chat_interface = pn.chat.ChatInterface(callback=callback)
+template = pn.template.BootstrapTemplate(title='AutoGen Chatbot')
+
+chat_interface = pn.chat.ChatInterface(callback=callback, user="Admin", renderers=[custom_renderer])
+
+template.main.append(chat_interface)
+
 chat_interface.send("Send a message!", user="System", respond=False)
-chat_interface.servable()
+
+template.servable();
 
