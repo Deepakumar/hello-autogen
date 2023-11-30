@@ -8,9 +8,9 @@ import json
 
 config_list = [
     {
-        "api_base": "",
-        "api_type": "",
-        "api_key": "",
+        "api_base": "http://localhost:1234/v1",
+        "api_type": "open_ai",
+        "api_key": "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",
     }
 ]
 
@@ -35,7 +35,7 @@ Marketing = AssistantAgent(
     name="Marketing",
     llm_config=llm_config,
     max_consecutive_auto_reply=3,
-    system_message="Marketing. You Adhere to an approved plan and develop a marketing strategy for given context"""
+    system_message="Marketing. You Adhere to an approved plan and develop a marketing strategy for your SaaS product."""
 )
 
 Sales = AssistantAgent(
@@ -43,7 +43,7 @@ Sales = AssistantAgent(
     llm_config=llm_config,
     max_consecutive_auto_reply=3,
     system_message="""
-    Sales.You execute an approved plan and formulate a sales strategy for your given context.".
+    Sales.You execute an approved plan and formulate a sales strategy for your SaaS solution.".
 """,
 )
 
@@ -51,11 +51,12 @@ Planner = AssistantAgent(
     name="Planner",
     max_consecutive_auto_reply=3,
     system_message=""",
-                    Planner.Propose a plan and iteratively refine it based on feedback from the admin and 
-                    critic until it obtains admin approval. 
-                    Begin by providing a clear explanation of the plan, 
-                    specifying which steps are carried out by the Marketing, Sales,critic, and Product teams.
-                    """,
+Planner.Propose a plan and iteratively refine it based on feedback from the admin and 
+critic until it obtains admin approval. 
+Begin by providing a clear explanation of the plan, 
+specifying which steps are carried out by the Marketing, Sales,critic, and Product teams.
+
+""",
     llm_config=llm_config,
 )
 
@@ -63,7 +64,7 @@ Product = AssistantAgent(
     name="Product",
     llm_config=llm_config,
     max_consecutive_auto_reply=3,
-    system_message="""Product.You Adhere to an approved plan and ensure the accurate implementation of specifications for given context.
+    system_message="""Product.You Adhere to an approved plan and ensure the accurate implementation of specifications for the SaaS-based product.
 """,)
 
 
@@ -147,27 +148,6 @@ def clear_callback(event):
 template = pn.template.BootstrapTemplate(title='AutoGen Chatbot')
 
 chat_interface = pn.chat.ChatInterface(callback=callback, user="Admin", renderers=[custom_renderer])
-chat_interface.css = [
-    {
-        "selector": ".bk.chat-entry",
-        "props": [
-            ("font-size", "24px"),  
-        ],
-    },
-    {
-        "selector": ".bk.chat-avatar img",
-        "props": [
-            ("width", "50px"),  
-            ("height", "50px"),  
-        ],
-    },
-    {
-        "selector": ".bk-panel-models-markup-HTML",
-        "props": [
-            ("font-size", "20px"),  
-        ],
-    }
-]
 
 clear_button = pn.widgets.Button(name='Clear Session')
 clear_button.on_click(clear_callback)
