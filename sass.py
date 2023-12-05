@@ -5,12 +5,13 @@ from autogen.agentchat import GroupChat
 import autogen
 import panel as pn
 import json
+import datetime
 
 config_list = [
     {
-        "api_base": "",
-        "api_type": "",
-        "api_key": "",
+        "api_base": "http://localhost:1234/v1",
+        "api_type": "open_ai",
+        "api_key": "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"
     }
 ]
 
@@ -174,7 +175,14 @@ clear_button.on_click(clear_callback)
 
 template.main.append(pn.Row(clear_button, chat_interface))
 
-chat_interface.send("Send a message!", user="System", respond=False)
+
+current_time = datetime.datetime.now()
+current_hour = current_time.hour
+
+if current_hour < 12:
+    chat_interface.send("Good morning! Admin..", user="System", respond=False)
+else:
+    chat_interface.send("Good evening! Admin..", user="System", respond=False)
 
 template.servable();
 
